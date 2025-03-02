@@ -1,0 +1,53 @@
+{
+  "version": 3,
+  "extra_config": {
+    "telemetry/logging": {
+      "level": "DEBUG",
+      "prefix": "[KRAKEND]"
+    }
+  },
+  "port": 8080,
+  "timeout": "3000ms",
+  "endpoints": [
+    {
+      "endpoint": "/user/{user_id}/details",
+      "method": "GET",
+      "backend": [
+        {
+          "url_pattern": "/users/{user_id}",
+          "host": ["http://mock-api:3000"],
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": true,
+              "disable_ssl_verification": true,
+              "timeout": "5000ms"
+            }
+          }
+        },
+        {
+          "url_pattern": "/orders?user_id={user_id}",
+          "host": ["http://mock-api:3000"],
+          "group": "orders",
+          "is_collection": true,
+          "extra_config": {
+            "backend/http": {
+              "return_error_details": true,
+              "disable_ssl_verification": true,
+              "timeout": "5000ms"
+            },
+            "backend/response/marshal/jq": {
+              "query": "{ orders_list: . }"
+            },
+            "modifier": {
+              "response": {
+                "wrap": {
+                  "name": "orders_list"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

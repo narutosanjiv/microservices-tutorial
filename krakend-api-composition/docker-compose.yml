@@ -1,0 +1,26 @@
+networks:
+  mynetwork:
+
+services:
+  krakend:
+    image: devopsfaith/krakend:latest
+    volumes:
+      - ./krakend.json:/etc/krakend/krakend.json
+    ports:
+      - "8080:8080"
+    command: [ "run", "-c", "/etc/krakend/krakend.json" ]
+    depends_on:
+      - mock-api
+    networks:
+      - mynetwork
+  mock-api:
+    image: vimagick/json-server
+    command: -h 0.0.0.0 -p 3000 -w db.json
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./db.json:/data/db.json
+    restart: always
+    networks:
+      - mynetwork
+
